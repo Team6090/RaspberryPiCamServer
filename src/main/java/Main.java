@@ -18,16 +18,22 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.opencv.core.KeyPoint;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfKeyPoint;
+import org.opencv.core.Point;
+
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.vision.VisionThread;
-
-import org.opencv.core.Mat;
+import edu.wpi.first.wpilibj.Sendable;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /*
    JSON format:
@@ -256,40 +262,26 @@ public final class Main {
     System.out.println("Starting switched camera '" + config.name + "' on " + config.key);
     MjpegServer server = CameraServer.getInstance().addSwitchedCamera(config.name);
 
-    NetworkTableInstance.getDefault()
-        .getEntry(config.key)
-        .addListener(event -> {
-              if (event.value.isDouble()) {
-                int i = (int) event.value.getDouble();
-                if (i >= 0 && i < cameras.size()) {
-                  server.setSource(cameras.get(i));
-                }
-              } else if (event.value.isString()) {
-                String str = event.value.getString();
-                for (int i = 0; i < cameraConfigs.size(); i++) {
-                  if (str.equals(cameraConfigs.get(i).name)) {
-                    server.setSource(cameras.get(i));
-                    break;
-                  }
-                }
-              }
-            },
-            EntryListenerFlags.kImmediate | EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    NetworkTableInstance.getDefault().getEntry(config.key).addListener(event -> {
+      if (event.value.isDouble()) {
+        int i = (int) event.value.getDouble();
+        if (i >= 0 && i < cameras.size()) {
+          server.setSource(cameras.get(i));
+        }
+      } else if (event.value.isString()) {
+        String str = event.value.getString();
+        for (int i = 0; i < cameraConfigs.size(); i++) {
+          if (str.equals(cameraConfigs.get(i).name)) {
+            server.setSource(cameras.get(i));
+            break;
+          }
+        }
+      }
+    }, EntryListenerFlags.kImmediate | EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
     return server;
   }
 
-  /**
-   * Example pipeline.
-   */
-  public static class MyPipeline implements VisionPipeline {
-    public int val;
-
-    @Override
-    public void process(Mat mat) {
-      val += 1;
-    }
-  }
   /**
    * Main.
    */
@@ -325,8 +317,16 @@ public final class Main {
 
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
-      VisionThread gripVisionThread = new VisionThread(cameras.get(0),
-              new UsbJavaGrip(), pipeline -> {
+      VisionThread gripVisionThread = new VisionThread(cameras.get(0), new UsbJavaGrip(), pipeline -> {
+        MatOfKeyPoint bloberoo = pipeline.findBlobsOutput();
+        KeyPoint[] keypointArray = bloberoo.toArray();
+        double[] pointXArr;
+        double [] pointYArr;
+        for (int i = 0; i <= keypointArray.length; i++) {
+          Point point = keypointArray[i].pt;
+          
+        }
+        //SmartDashboard.putNumber("RaspPi BlobsReport", example2);
       });
       gripVisionThread.start();
     }
