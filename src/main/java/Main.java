@@ -290,7 +290,6 @@ public final class Main {
       val += 1;
     }
   }
-
   /**
    * Main.
    */
@@ -326,16 +325,10 @@ public final class Main {
 
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
-      VisionThread visionThread = new VisionThread(cameras.get(0),
-              new MyPipeline(), pipeline -> {
-        // do something with pipeline results
-      });
-      //something like this for GRIP:
       VisionThread gripVisionThread = new VisionThread(cameras.get(0),
-              new GripPipeline(), pipeline -> {
-        
+              new UsbJavaGrip(), pipeline -> {
       });
-      visionThread.start();
+      gripVisionThread.start();
     }
 
     // loop forever
