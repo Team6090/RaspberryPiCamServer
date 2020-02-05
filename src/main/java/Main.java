@@ -318,15 +318,20 @@ public final class Main {
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
       VisionThread gripVisionThread = new VisionThread(cameras.get(0), new UsbJavaGrip(), pipeline -> {
+        /* The start of a long conversion to get MatOfKeyPoint to individual point values */
         MatOfKeyPoint bloberoo = pipeline.findBlobsOutput();
         KeyPoint[] keypointArray = bloberoo.toArray();
-        double[] pointXArr;
-        double [] pointYArr;
+        /* X and Y arrays to hold the point values */
+        double[] arrX = new double[keypointArray.length];
+        double[] arrY = new double[keypointArray.length];
+        /* Setting values to the X and Y double arrays declared above. */
         for (int i = 0; i <= keypointArray.length; i++) {
           Point point = keypointArray[i].pt;
-          
+          arrX[i] = point.x;
+          arrY[i] = point.y;
         }
-        //SmartDashboard.putNumber("RaspPi BlobsReport", example2);
+        SmartDashboard.putNumberArray("RaspPi BlobsReportX", arrX);
+        SmartDashboard.putNumberArray("RaspPi BlobsReportY", arrY);
       });
       gripVisionThread.start();
     }
