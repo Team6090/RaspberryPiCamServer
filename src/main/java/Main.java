@@ -330,11 +330,20 @@ public final class Main {
           arrX[i] = point.x;
           arrY[i] = point.y;
         }
-        SmartDashboard.putNumberArray("RaspPi BlobsReportX", arrX);
-        SmartDashboard.putNumberArray("RaspPi BlobsReportY", arrY);
+        /**
+         * TODO:
+         * For Collin if he wants to look at it. This is where we're outputting
+         * to the Network table.
+         * Hopefully, at least.
+         */
+        System.out.println("WEEWOOOWEEWOOWEEOWOOO");
+        ntinst.getEntry("BlobberooX").forceSetDoubleArray(arrX);
+        ntinst.getEntry("BlobberooY").forceSetDoubleArray(arrY);
       });
       gripVisionThread.start();
     }
+
+    System.out.println("I'm working");
 
     // loop forever
     for (;;) {
