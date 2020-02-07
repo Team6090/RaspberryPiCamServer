@@ -19,7 +19,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.opencv.core.KeyPoint;
-import org.opencv.core.Mat;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Point;
 
@@ -28,12 +27,8 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionThread;
-import edu.wpi.first.wpilibj.Sendable;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /*
    JSON format:
@@ -317,7 +312,7 @@ public final class Main {
 
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
-      VisionThread gripVisionThread = new VisionThread(cameras.get(0), new UsbJavaGrip(), pipeline -> {
+      VisionThread gripVisionThread = new VisionThread(cameras.get(0), new UsbJavaGripTwo(), pipeline -> {
         /* The start of a long conversion to get MatOfKeyPoint to individual point values */
         MatOfKeyPoint bloberoo = pipeline.findBlobsOutput();
         KeyPoint[] keypointArray = bloberoo.toArray();
@@ -325,25 +320,17 @@ public final class Main {
         double[] arrX = new double[keypointArray.length];
         double[] arrY = new double[keypointArray.length];
         /* Setting values to the X and Y double arrays declared above. */
-        for (int i = 0; i <= keypointArray.length; i++) {
+        for (int i = 0; i < keypointArray.length; i++) {
           Point point = keypointArray[i].pt;
           arrX[i] = point.x;
           arrY[i] = point.y;
         }
-        /**
-         * TODO:
-         * For Collin if he wants to look at it. This is where we're outputting
-         * to the Network table.
-         * Hopefully, at least.
-         */
-        System.out.println("WEEWOOOWEEWOOWEEOWOOO");
+        /** Print out to the NetworkTables. */
         ntinst.getEntry("BlobberooX").forceSetDoubleArray(arrX);
         ntinst.getEntry("BlobberooY").forceSetDoubleArray(arrY);
       });
       gripVisionThread.start();
     }
-
-    System.out.println("I'm working");
 
     // loop forever
     for (;;) {
